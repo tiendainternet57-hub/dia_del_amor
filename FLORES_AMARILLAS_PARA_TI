@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viaje a las Flores Amarillas 🌻✨</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@600;700&family=Great+Vibes&family=Montserrat:ital,wght@0,300;0,400;0,600;1,300&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <style>
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #030206;
+            font-family: 'Montserrat', sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .font-cursive { font-family: 'Great Vibes', cursive; }
+        .font-romantic { font-family: 'Dancing Script', cursive; }
+
+        .text-glow-gold {
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.9), 0 0 22px rgba(255, 180, 0, 0.7), 0 0 35px rgba(255, 140, 0, 0.5);
+        }
+
+        .text-glow-yellow {
+            text-shadow: 0 0 6px rgba(255, 255, 160, 0.9), 0 0 15px rgba(255, 220, 0, 0.8);
+        }
+
+        .glass-panel {
+            background: rgba(18, 12, 4, 0.85);
+            backdrop-filter: blur(14px);
+            -webkit-backdrop-filter: blur(14px);
+            border: 1px solid rgba(255, 215, 0, 0.35);
+            box-shadow: 0 0 40px rgba(255, 190, 0, 0.3), inset 0 0 20px rgba(255, 215, 0, 0.15);
+        }
+
+        .floating-label {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            white-space: nowrap;
+            pointer-events: auto;
+            cursor: pointer;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.8s ease, filter 0.3s ease;
+            z-index: 10;
+        }
+
+        .floating-label:hover {
+            transform: translate(-50%, -50%) scale(1.25) !important;
+            filter: drop-shadow(0 0 15px rgba(255, 230, 0, 0.95));
+        }
+
+        .modal-hidden {
+            opacity: 0;
+            transform: scale(0.75) translateY(30px);
+            pointer-events: none;
+        }
+
+        .modal-visible {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+            transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Pulse glow for buttons */
+        @keyframes pulseGlow {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 25px rgba(255, 215, 0, 0.6); }
+            50% { transform: scale(1.05); box-shadow: 0 0 45px rgba(255, 215, 0, 0.95); }
+        }
+
+        .pulse-glow {
+            animation: pulseGlow 2.5s infinite ease-in-out;
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: rgba(10, 5, 0, 0.5); }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 215, 0, 0.6); border-radius: 3px; }
+    </style>
+</head>
+<body class="relative w-full h-full bg-black overflow-hidden flex items-center justify-center">
+
+    <canvas id="spaceCanvas" class="absolute inset-0 w-full h-full z-0"></canvas>
+
+    <div id="introScreen" class="absolute z-30 flex flex-col items-center justify-center text-center p-6 transition-all duration-1000">
+        <div class="mb-8 relative">
+            <div class="w-24 h-24 rounded-full bg-gradient-to-tr from-yellow-500 to-amber-200 p-1 shadow-[0_0_50px_rgba(255,215,0,0.8)] pulse-glow flex items-center justify-center">
+                <span class="text-5xl">✨</span>
+            </div>
+        </div>
+        <h1 class="text-4xl md:text-6xl font-cursive text-yellow-300 text-glow-gold mb-4 tracking-wide">
+            Flores Amarillas para Ti
+        </h1>
+        <p class="text-yellow-100/80 font-light text-sm md:text-base max-w-md mb-8 leading-relaxed">
+            Una galaxia de detalles pensada especialmente para ti...
+        </p>
+
+        <button id="startJourneyBtn" class="group relative inline-flex items-center justify-center p-0.5 overflow-hidden text-lg font-medium rounded-full bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600 hover:text-white focus:outline-none shadow-[0_0_35px_rgba(255,215,0,0.8)] transition-all duration-300 hover:scale-110">
+            <span class="relative px-10 py-4 transition-all ease-in duration-200 bg-gray-950 rounded-full group-hover:bg-opacity-0 font-semibold text-yellow-200 flex items-center gap-3 tracking-wider">
+                <span>Comenzar Viaje</span>
+                <i class="fas fa-rocket text-yellow-400 group-hover:translate-x-1 transition-transform"></i>
+            </span>
+        </button>
+    </div>
+
+    <div id="orbitContainer" class="absolute inset-0 pointer-events-none z-10 transition-opacity duration-1000 opacity-0"></div>
+
+    <div id="hudControls" class="absolute top-6 left-6 z-20 flex items-center gap-3 transition-opacity duration-1000 opacity-0">
+        <button id="musicBtn" class="glass-panel text-yellow-300 px-4 py-2.5 rounded-full flex items-center gap-2 text-xs md:text-sm font-medium hover:bg-yellow-500/20 transition duration-300">
+            <i class="fas fa-music text-yellow-400 animate-spin" style="animation-duration: 4s;"></i>
+            <span id="musicText">Música Activa</span>
+        </button>
+    </div>
+
+    <div id="noteModalOverlay" class="fixed inset-0 bg-black/80 backdrop-blur-md z-40 flex items-center justify-center p-4 modal-hidden transition-all duration-500">
+        <div id="noteModalContent" class="glass-panel max-w-lg w-full rounded-3xl p-8 text-center relative border border-yellow-400/50 shadow-[0_0_60px_rgba(255,215,0,0.4)] my-auto overflow-hidden">
+            
+            <!-- Ambient glows inside modal -->
+            <div class="absolute -top-20 -left-20 w-40 h-40 bg-yellow-500/20 rounded-full blur-3xl pointer-events-none"></div>
+            <div class="absolute -bottom-20 -right-20 w-40 h-40 bg-amber-500/20 rounded-full blur-3xl pointer-events-none"></div>
+
+            <!-- Sunflower / Icon Header -->
+            <div class="relative z-10 mb-3 inline-block">
+                <div class="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-yellow-400 to-amber-200 p-0.5 shadow-[0_0_25px_rgba(255,215,0,0.8)]">
+                    <div class="w-full h-full rounded-full bg-gray-950 flex items-center justify-center text-3xl" id="modalIcon">
+                        🌻
+                    </div>
+                </div>
+            </div>
+
+            <!-- Title -->
+            <h2 id="modalTitle" class="text-3xl md:text-4xl font-cursive text-yellow-300 text-glow-gold mb-1">
+                Nota Especial
+            </h2>
+            <p id="modalSubtitle" class="text-xs uppercase tracking-widest text-amber-300/80 mb-4 font-light">
+                Para la persona más especial
+            </p>
+
+            <div class="w-20 h-0.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent mx-auto mb-5"></div>
+
+            <!-- Content Body -->
+            <div id="modalBody" class="text-yellow-100/90 space-y-3 text-sm md:text-base leading-relaxed font-light text-justify px-2 max-h-[45vh] overflow-y-auto">
+                <!-- Text populated dynamically -->
+            </div>
+
+            <!-- Footer & Close Button -->
+            <div class="mt-6 pt-4 border-t border-yellow-500/20 flex items-center justify-between">
+                <span class="font-romantic text-xl text-yellow-300 text-glow-yellow">
+                    Con mucho amor ✨
+                </span>
+                
+                <button id="closeModalBtn" class="bg-yellow-500/20 hover:bg-yellow-500/40 text-yellow-200 border border-yellow-400/50 px-6 py-2 rounded-full font-medium text-xs md:text-sm transition-all duration-300 hover:shadow-[0_0_20px_rgba(255,215,0,0.6)] flex items-center gap-1.5">
+                    <span>Volver a la Galaxia</span>
+                    <i class="fas fa-sparkles text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class RomanticAudioSynthesizer {
+            constructor() {
+                this.ctx = null;
+                this.isPlaying = false;
+                this.timer = null;
+                this.notes = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99];
+                this.chords = [
+                    [261.63, 329.63, 392.00],
+                    [220.00, 261.63, 329.63],
+                    [174.61, 220.00, 261.63],
+                    [196.00, 246.94, 293.66]
+                ];
+                this.chordIdx = 0;
+            }
+
+            init() {
+                if (!this.ctx) {
+                    const AudioContext = window.AudioContext || window.webkitAudioContext;
+                    this.ctx = new AudioContext();
+                }
+                if (this.ctx.state === 'suspended') {
+                    this.ctx.resume();
+                }
+            }
+
+            playTone(freq, type = 'sine', duration = 2.5, gainVal = 0.08) {
+                if (!this.isPlaying || !this.ctx) return;
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+
+                    gain.gain.setValueAtTime(0, this.ctx.currentTime);
+                    gain.gain.linearRampToValueAtTime(gainVal, this.ctx.currentTime + 0.3);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch (e) {}
+            }
+
+            start() {
+                this.init();
+                this.isPlaying = true;
+                let step = 0;
+
+                this.timer = setInterval(() => {
+                    if (!this.isPlaying) return;
+                    if (step % 6 === 0) {
+                        const currentChord = this.chords[this.chordIdx];
+                        currentChord.forEach(n => this.playTone(n * 0.5, 'sine', 3.5, 0.025));
+                        this.chordIdx = (this.chordIdx + 1) % this.chords.length;
+                    }
+                    if (Math.random() > 0.3) {
+                        const randomNote = this.notes[Math.floor(Math.random() * this.notes.length)];
+                        this.playTone(randomNote, 'triangle', 2.0, 0.04);
+                    }
+                    step++;
+                }, 700);
+            }
+
+            stop() {
+                this.isPlaying = false;
+                if (this.timer) clearInterval(this.timer);
+            }
+
+            toggle() {
+                if (this.isPlaying) this.stop();
+                else this.start();
+                return this.isPlaying;
+            }
+        }
+
+        const romanticNotesData = {
+    "Conversar contigo": {
+        icon: "✨",
+        subtitle: "Mi charla favorita",
+        text: [
+            "Es increíble cómo una conversación normal contigo se convierte en el mejor momento del día.",
+            "Me encanta la facilidad con la que nos entendemos y lo divertido que es compartir cosas contigo."
+        ]
+    },
+    "Tu gran sonrisa": {
+        icon: "🌻",
+        subtitle: "Buena vibra total",
+        text: [
+            "Tienes una risa contagiosa que alegra cualquier lugar.",
+            "Incluso en un día pesado, hablar un rato contigo o ver tus ocurrencias siempre me saca una sonrisa."
+        ]
+    },
+    "Confianza especial": {
+        icon: "🤝",
+        subtitle: "Cómplices de verdad",
+        text: [
+            "Valoro mucho la confianza que tenemos. Es genial poder ser totalmente yo mismo contigo.",
+            "Sabes que cuentas conmigo para lo que sea, en las buenas, en las malas y en las bromas."
+        ]
+    },
+    "Eres genial": {
+        icon: "🌟",
+        subtitle: "Única en tu estilo",
+        text: [
+            "Tienes una forma de ser auténtica que llama mucho la atención.",
+            "Tu personalidad tiene esa chispa divertida y genial que hace que nunca me aburra a tu lado."
+        ]
+    },
+    "Compañerismo puro": {
+        icon: "🤝",
+        subtitle: "Siempre ahí",
+        text: [
+            "Es genial saber que cuento con una amiga de verdad, alguien con quien siempre hay buena vibra y apoyo mutuo.",
+            "Me encanta lo fácil que es compartir momentos contigo y saber que en las buenas y en las malas siempre hay compañerismo."
+        ]
+    },
+    "Feliz Día de la Amistad": {
+        icon: "💛",
+        subtitle: "Celebrando lo bueno",
+        text: [
+            "En un día especial como hoy, quería aprovechar para recordarte lo mucho que valoro contar con tu amistad.",
+            "Gracias por los momentos compartidos, por tu buena energía y por ser esa amiga increíble que siempre le pone alegría a todo."
+        ]
+    },
+    "Detalle para ti": {
+        icon: "💐",
+        subtitle: "Para una gran amiga",
+        text: [
+            "Estas flores amarillas son un detalle sincero para recordarte lo mucho que valoro tenerte en mi vida.",
+            "Gracias por tu amistad, por las risas y por ser una persona tan increíble."
+        ]
+    },
+    "A seguir compartiendo": {
+        icon: "💖",
+        subtitle: "Lo mejor está por venir",
+        text: [
+            "Me encanta lo bien que nos comunicamos sin complicaciones ni presiones.",
+            "A seguir sumando momentos, risas y buenas historias. ¡Que nada cambie esta gran amistad!"
+        ]
+            }
+        };
+
+        const canvas = document.getElementById('spaceCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, centerX, centerY;
+        let particles = [];
+        let heartParticles = [];
+        let stars = [];
+        let time = 0;
+
+        // Zoom scale variable (Starts far away: 0.05 -> Zoom in to 1.0)
+        let currentZoom = 0.05;
+        let targetZoom = 0.05;
+        let journeyStarted = false;
+
+        function resizeCanvas() {
+            width = canvas.width = window.innerWidth;
+            height = canvas.height = window.innerHeight;
+            centerX = width / 2;
+            centerY = height / 2;
+            initSpace();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Parametric Heart Shape
+        function getHeartPoint(t, scale = 14) {
+            const x = 16 * Math.pow(Math.sin(t), 3);
+            const y = -(13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t));
+            return { x: x * scale, y: y * scale };
+        }
+
+        function initSpace() {
+            particles = [];
+            heartParticles = [];
+            stars = [];
+
+            // Background distant stars
+            for (let i = 0; i < 400; i++) {
+                stars.push({
+                    x: (Math.random() - 0.5) * width * 3,
+                    y: (Math.random() - 0.5) * height * 3,
+                    z: Math.random() * 1000 + 1,
+                    size: Math.random() * 1.5 + 0.3,
+                    alpha: Math.random()
+                });
+            }
+
+            // Galaxy spiral particles
+            const spiralCount = 850;
+            for (let i = 0; i < spiralCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.pow(Math.random(), 1.6) * (Math.min(width, height) * 0.5);
+                particles.push({
+                    angle: angle,
+                    distance: distance,
+                    speed: 0.002 + Math.random() * 0.002,
+                    size: Math.random() * 2.8 + 0.6,
+                    color: Math.random() > 0.35 ? '#ffdf00' : (Math.random() > 0.5 ? '#ffd700' : '#ffffff'),
+                    alpha: Math.random() * 0.85 + 0.15,
+                    pulse: Math.random() * Math.PI
+                });
+            }
+
+            // Central Heart Particles
+            const heartPoints = 240;
+            const heartScale = Math.min(width, height) * 0.013;
+            for (let i = 0; i < heartPoints; i++) {
+                const t = (i / heartPoints) * Math.PI * 2;
+                const pos = getHeartPoint(t, heartScale);
+                heartParticles.push({
+                    baseX: pos.x,
+                    baseY: pos.y,
+                    size: Math.random() * 2.6 + 1.2,
+                    offset: Math.random() * Math.PI * 2,
+                    color: i % 2 === 0 ? '#fff580' : '#ffc107'
+                });
+            }
+        }
+
+        function render() {
+            time += 0.015;
+
+            // Smooth Zoom interpolation
+            currentZoom += (targetZoom - currentZoom) * 0.035;
+
+            // Clear background with cosmic trail effect
+            ctx.fillStyle = 'rgba(3, 2, 6, 0.25)';
+            ctx.fillRect(0, 0, width, height);
+
+            ctx.save();
+            ctx.translate(centerX, centerY);
+
+            // 1. Render Stars moving forward during zoom
+            stars.forEach(s => {
+                const scale = (currentZoom * 800) / s.z;
+                const sx = s.x * currentZoom;
+                const sy = s.y * currentZoom;
+
+                if (sx > -centerX && sx < centerX && sy > -centerY && sy < centerY) {
+                    ctx.fillStyle = `rgba(255, 240, 180, ${s.alpha * Math.min(1, currentZoom * 2)})`;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, Math.max(0.5, s.size * currentZoom * 2), 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // 2. Render Central Nebula Glow
+            if (currentZoom > 0.1) {
+                const auraGrad = ctx.createRadialGradient(0, 0, 5, 0, 0, Math.min(width, height) * 0.4 * currentZoom);
+                auraGrad.addColorStop(0, `rgba(255, 200, 0, ${0.25 * currentZoom})`);
+                auraGrad.addColorStop(0.5, `rgba(255, 140, 0, ${0.08 * currentZoom})`);
+                auraGrad.addColorStop(1, 'rgba(0,0,0,0)');
+                ctx.fillStyle = auraGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, Math.min(width, height) * 0.4 * currentZoom, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // 3. Render Galaxy Spiral Particles
+            particles.forEach(p => {
+                p.angle += p.speed;
+                p.pulse += 0.025;
+                const currentDist = (p.distance + Math.sin(p.pulse) * 6) * currentZoom;
+                const x = Math.cos(p.angle) * currentDist;
+                const y = Math.sin(p.angle) * currentDist * 0.65; // Orbit tilt
+
+                ctx.save();
+                ctx.fillStyle = p.color;
+                ctx.globalAlpha = p.alpha * Math.min(1, currentZoom * 1.5);
+                ctx.shadowColor = '#ffb700';
+                ctx.shadowBlur = (p.size > 2 && currentZoom > 0.5) ? 10 : 0;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.max(0.2, p.size * currentZoom), 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+            });
+
+            // 4. Render Sparkling Central Heart
+            if (currentZoom > 0.2) {
+                const heartPulse = 1 + Math.sin(time * 3) * 0.06;
+                heartParticles.forEach(hp => {
+                    const px = (hp.baseX + Math.sin(time * 2 + hp.offset) * 3) * heartPulse * currentZoom;
+                    const py = (hp.baseY + Math.cos(time * 2 + hp.offset) * 3) * heartPulse * currentZoom;
+
+                    ctx.save();
+                    ctx.fillStyle = hp.color;
+                    ctx.globalAlpha = Math.min(1, (currentZoom - 0.2) * 1.5);
+                    ctx.shadowColor = '#ffee55';
+                    ctx.shadowBlur = 12;
+                    ctx.beginPath();
+                    ctx.arc(px, py, Math.max(0.3, hp.size * currentZoom), 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.restore();
+                });
+            }
+
+            ctx.restore();
+
+            requestAnimationFrame(render);
+        }
+
+        const audioSynth = new RomanticAudioSynthesizer();
+        let orbitElements = [];
+
+        function createOrbitingElements() {
+            const container = document.getElementById('orbitContainer');
+            container.innerHTML = '';
+            orbitElements = [];
+
+            const phrases = Object.keys(romanticNotesData);
+            const count = phrases.length;
+
+            phrases.forEach((phraseKey, index) => {
+                const data = romanticNotesData[phraseKey];
+                const el = document.createElement('div');
+                el.className = 'floating-label glass-panel px-4 py-2 rounded-full border border-yellow-400/50 shadow-lg text-yellow-200 font-semibold text-xs md:text-sm flex items-center gap-2 backdrop-blur-md select-none';
+                el.innerHTML = `
+                    <span class="text-xl animate-bounce" style="animation-duration: ${2 + index * 0.2}s">${data.icon}</span>
+                    <span class="font-romantic text-base md:text-lg text-glow-gold text-yellow-300">${phraseKey}</span>
+                `;
+
+                // Click event opens the specific note modal for this phrase
+                el.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openNoteModal(phraseKey);
+                });
+
+                container.appendChild(el);
+
+                orbitElements.push({
+                    element: el,
+                    angle: (index / count) * Math.PI * 2,
+                    speed: 0.003
+                });
+            });
+        }
+
+        function updateOrbit() {
+            if (journeyStarted && currentZoom > 0.4) {
+                const cx = window.innerWidth / 2;
+                const cy = window.innerHeight / 2;
+                const radiusX = Math.min(window.innerWidth, window.innerHeight) * 0.38;
+                const radiusY = radiusX * 0.55;
+
+                orbitElements.forEach(item => {
+                    item.angle += item.speed;
+                    const x = cx + Math.cos(item.angle) * radiusX;
+                    const y = cy + Math.sin(item.angle) * radiusY;
+
+                    const zIndex = Math.floor((Math.sin(item.angle) + 1) * 100);
+                    const opacity = Math.min(1, (currentZoom - 0.4) * 2) * (0.6 + (Math.sin(item.angle) + 1) * 0.2);
+
+                    item.element.style.left = `${x}px`;
+                    item.element.style.top = `${y}px`;
+                    item.element.style.zIndex = zIndex;
+                    item.element.style.opacity = opacity;
+                });
+            }
+
+            requestAnimationFrame(updateOrbit);
+        }
+
+        const noteModalOverlay = document.getElementById('noteModalOverlay');
+        const modalIcon = document.getElementById('modalIcon');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalSubtitle = document.getElementById('modalSubtitle');
+        const modalBody = document.getElementById('modalBody');
+        const closeModalBtn = document.getElementById('closeModalBtn');
+
+        function openNoteModal(phraseKey) {
+            const data = romanticNotesData[phraseKey];
+            if (!data) return;
+
+            audioSynth.init();
+            audioSynth.playTone(587.33, 'triangle', 1.8, 0.12);
+
+            modalIcon.textContent = data.icon;
+            modalTitle.textContent = phraseKey;
+            modalSubtitle.textContent = data.subtitle;
+
+            modalBody.innerHTML = data.text.map(p => `<p class="first-letter:text-2xl first-letter:font-cursive first-letter:text-yellow-300">${p}</p>`).join('');
+
+            noteModalOverlay.classList.remove('modal-hidden');
+            noteModalOverlay.classList.add('modal-visible');
+        }
+
+        closeModalBtn.addEventListener('click', () => {
+            noteModalOverlay.classList.remove('modal-visible');
+            noteModalOverlay.classList.add('modal-hidden');
+        });
+
+        noteModalOverlay.addEventListener('click', (e) => {
+            if (e.target === noteModalOverlay) {
+                noteModalOverlay.classList.remove('modal-visible');
+                noteModalOverlay.classList.add('modal-hidden');
+            }
+        });
+
+        const startJourneyBtn = document.getElementById('startJourneyBtn');
+        const introScreen = document.getElementById('introScreen');
+        const orbitContainer = document.getElementById('orbitContainer');
+        const hudControls = document.getElementById('hudControls');
+        const musicBtn = document.getElementById('musicBtn');
+        const musicText = document.getElementById('musicText');
+
+        startJourneyBtn.addEventListener('click', () => {
+            journeyStarted = true;
+            targetZoom = 1.0; // Trigger Zoom-In cinematic sequence
+
+            // Fade out intro button and title
+            introScreen.style.opacity = '0';
+            introScreen.style.pointerEvents = 'none';
+
+            // Start Audio Synthesizer
+            audioSynth.init();
+            audioSynth.start();
+
+            // Reveal HUD and Orbiting phrases when galaxy is reached
+            setTimeout(() => {
+                orbitContainer.classList.remove('opacity-0');
+                orbitContainer.classList.add('opacity-100');
+                hudControls.classList.remove('opacity-0');
+                hudControls.classList.add('opacity-100');
+            }, 1200);
+        });
+
+        musicBtn.addEventListener('click', () => {
+            const playing = audioSynth.toggle();
+            if (playing) {
+                musicText.textContent = "Música Activa";
+                musicBtn.classList.remove('opacity-60');
+            } else {
+                musicText.textContent = "Música Pausada";
+                musicBtn.classList.add('opacity-60');
+            }
+        });
+
+        window.onload = function() {
+            resizeCanvas();
+            render();
+            createOrbitingElements();
+            updateOrbit();
+        };
+    </script>
+</body>
+</html>
